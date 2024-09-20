@@ -40,16 +40,16 @@
     "@hapi/hoek": "^11.0.4",
     "@jridgewell/sourcemap-codec": "^1.5.0",
     "@rollup/plugin-terser": "^0.4.4",
-    "apollo-server-micro": "^2.25.2",
+    "apollo-server-micro": "^3.13.0",
     "core-js-pure": "^3.38.1",
     "framer-motion": "^6",
     "glob": "^9.3.5",
     "graphql": "^15.8.0",
     "graphql-tools": "^9.0.1",
     "graphql-ws": "^5.16.0",
-    "lingva-scraper": "1.1.0",
+    "lingva-scraper-update": "^1.0.1",
     "lru-cache": "^11.0.1",
-    "next": "12.1.6",
+    "next": "^14.2.12",
     "next-pwa": "^5.4.4",
     "nextjs-cors": "^2.1.0",
     "react": "18.2.0",
@@ -60,7 +60,7 @@
     "uuid": "^7.0.3"
   },
   "devDependencies": {
-    "@testing-library/cypress": "^8.0.3",
+    "@testing-library/cypress": "^10.0.2",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^14.2.0",
@@ -68,7 +68,7 @@
     "@types/node": "^17.0.43",
     "@types/react": "^18.0.12",
     "babel-eslint": "^10.1.0",
-    "cypress": "^10.1.0",
+    "cypress": "^13.14.2",
     "eslint": "^8.17.0",
     "eslint-config-next": "^12.1.6",
     "eslint-plugin-cypress": "^2.12.1",
@@ -76,7 +76,7 @@
     "jest-environment-jsdom": "^28.1.1",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3",
-    "wait-on": "^6.0.1"
+    "wait-on": "^8.0.1"
   },
   "eslintConfig": {
     "extends": [

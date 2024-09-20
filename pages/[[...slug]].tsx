@@ -12,7 +12,7 @@ import {
     isValidCode,
     TranslationInfo,
     LangCode
-} from "lingva-scraper";
+} from "lingva-scraper-update";
 import { HStack, IconButton, Stack, VStack } from "@chakra-ui/react";
 import { FaExchangeAlt } from "react-icons/fa";
 import { HiTranslate } from "react-icons/hi";

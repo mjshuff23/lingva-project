@@ -10,7 +10,7 @@ import {
     LanguageType,
     languageList,
     LangCode
-} from "lingva-scraper";
+} from "lingva-scraper-update";
 
 export const typeDefs = gql`
     enum LangType {
