@@ -1,8 +1,4 @@
-import {
-    ApolloServer,
-    gql,
-} from "@apollo/server";
-import { ApolloError, UserInputError } from 'apollo-server-errors';
+import { ApolloServer, gql } from "@apollo/server";
 import { NextApiRequest, NextApiResponse, NextApiHandler } from 'next';
 import NextCors from "nextjs-cors";
 import {
@@ -17,6 +13,7 @@ import {
     TranslationInfo,
     AudioEntry,
 } from "lingva-scraper-update";
+import { GraphQLError } from 'graphql';
 
 export const typeDefs = gql`
     enum LangType {
