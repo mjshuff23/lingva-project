@@ -1,34 +1,46 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",      // Specifies JS version to compile to (ES6)
     "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
+      "dom",              // DOM definitions (like 'document')
+      "dom.iterable",     // Adds support for DOM iterable types like NodeList
+      "esnext"            // All future ECMAScript features
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "baseUrl": "./",
+    "typeRoots": [
+      "./node_modules/@types"      // Location of type definitions
+    ],
+    "allowJs": false,              // Disallows JavaScript files to be compiled
+    "skipLibCheck": false,         // Type-checks all declaration files
+    "strict": true,                // Enables all strict type-checking options
+    "strictNullChecks": true,      // Prevents `null` and `undefined` from being assigned to any type.
+    "noImplicitAny": true,         // Prevents TypeScript from assigning the `any` type to variables.
+    "strictFunctionTypes": true,   // Ensures that functions have correctly-typed parameters and return values.
+    "noUnusedLocals": true,        // Reports errors on unused local variables
+    "noUnusedParameters": true,    // Reports errors on unused function parameters.
+    "forceConsistentCasingInFileNames": true, // Enforces consistent casing in file names across the project.
+    "strictBindCallApply": true,            // Ensures strict type-checking for `.bind`, `.call`, and `.apply` method calls.
+    "noEmit": true,                         // Prevents the compiler from emitting compiled files (useful for type-checking only).
+    "esModuleInterop": true,                // Provides better interoperability between CommonJS and ES Modules (e.g., `require` and `import`).
+    "module": "esnext",                     // Sets the module system to use for output (ESNext is for modern module systems).
+    "moduleResolution": "node",             // Specifies how TypeScript should resolve modules (Node.js resolution strategy).
+    "resolveJsonModule": true,              // Allows importing `.json` files as modules in TypeScript.
+    "isolatedModules": true,                // Ensures that each file can be safely transpiled without relying on other files.
+    "jsx": "preserve",                      // Keeps JSX as JSX (does not transpile it to JS); useful for frameworks like React.
+    "incremental": true,                    // Enables incremental builds (only re-compiles what has changed for faster builds).
+    "baseUrl": "./",                        // Sets the base directory for resolving non-relative module imports.
     "paths": {
-      "@*": ["*"]
+      "@/*": [
+        "src/*"                             // Configures path aliasing so that you can use `@/` to refer to the `src/` directory.
+      ]
     }
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
+    "next-env.d.ts", // Ensures Next.js-specific type definitions are included.
+    "**/*.ts",       // Includes all TypeScript files in the project.
+    "**/*.tsx"       // Includes all TypeScript files with JSX (React/JSX support).
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",  // Excludes node_modules from the compilation process.
+    "**/*.config.js" // Excludes JavaScript config files (like Webpack, Jest, etc.) from compilation.
   ]
 }

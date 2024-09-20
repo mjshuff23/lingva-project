@@ -1,22 +1,16 @@
-const withPWA = require("next-pwa");
-
-module.exports = withPWA({
+module.exports = {
     swcMinify: true,
-    pwa: {
-        dest: "public",
-        disable: process.env.NODE_ENV === 'development'
-    },
     async headers() {
         return [
             {
-                source: "/(.*)",
+                source: '/(.*)',
                 headers: [
                     {
-                        key: "Permissions-Policy",
-                        value: "interest-cohort=()"
-                    }
-                ]
-            }
+                        key: 'Permissions-Policy',
+                        value: 'interest-cohort=()',
+                    },
+                ],
+            },
         ];
-    }
-});
+    },
+};

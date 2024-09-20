@@ -3,8 +3,8 @@
 FROM node:lts-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./  
+RUN npm install
 
 FROM node:lts-alpine AS builder
 RUN apk add --no-cache curl
@@ -26,8 +26,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 HEALTHCHECK --interval=1m --timeout=3s CMD curl -f http://localhost:3000/ || exit 1
 
-CMD NEXT_PUBLIC_SITE_DOMAIN=$site_domain\
+CMD NEXT_PUBLIC_SITE_DOMAIN=$site_domain \
     NEXT_PUBLIC_FORCE_DEFAULT_THEME=$force_default_theme \
     NEXT_PUBLIC_DEFAULT_SOURCE_LANG=$default_source_lang \
     NEXT_PUBLIC_DEFAULT_TARGET_LANG=$default_target_lang \
-    yarn build && yarn start
+    npm run build && npm start   # Replace yarn commands with npm

@@ -1,5 +1,9 @@
-import { ApolloServer, gql, IResolvers, ApolloError, UserInputError } from "apollo-server-micro";
-import { NextApiHandler } from "next";
+import {
+    ApolloServer,
+    gql,
+} from "@apollo/server";
+import { ApolloError, UserInputError } from 'apollo-server-errors';
+import { NextApiRequest, NextApiResponse, NextApiHandler } from 'next';
 import NextCors from "nextjs-cors";
 import {
     getTranslationInfo,
@@ -9,17 +13,23 @@ import {
     isValidCode,
     LanguageType,
     languageList,
-    LangCode
+    LangCode,
+    TranslationInfo,
+    AudioEntry,
 } from "lingva-scraper-update";
 
 export const typeDefs = gql`
     enum LangType {
-        SOURCE,
+        SOURCE
         TARGET
     }
     type Query {
-        translation(source: String="auto" target: String="en" query: String!): Translation!
-        audio(lang: String! query: String!): AudioEntry!
+        translation(
+            source: String = "auto"
+            target: String = "en"
+            query: String!
+        ): Translation!
+        audio(lang: String!, query: String!): AudioEntry!
         languages(type: LangType): [Language]!
     }
     type Translation {
@@ -75,101 +85,196 @@ export const typeDefs = gql`
     }
 `;
 
-export const resolvers: IResolvers = {
+type Resolvers = {
     Query: {
-        async translation(_, args) {
-            const { source, target, query } = args;
+        translation: (
+            _parent: unknown,
+            args: { source: string; target: string; query: string }
+        ) => Promise<TranslationInfo>;
+        audio: (
+            _parent: unknown,
+            args: { lang: string; query: string }
+        ) => Promise<AudioEntry>;
+        languages: (
+            _parent: unknown,
+            args: { type: string }
+        ) => Array<{ code: string; name: string }>;
+    };
+    SourceEntry: {
+        audio: (parent: {
+            lang: { code: string };
+            text: string;
+        }) => Promise<number[]>;
+    };
+    TargetEntry: {
+        audio: (parent: {
+            lang: { code: string };
+            text: string;
+        }) => Promise<number[]>;
+    };
+    AudioEntry: {
+        audio: (parent: {
+            lang: { code: string };
+            text: string;
+        }) => Promise<number[]>;
+    };
+    Language: {
+        name: (parent: { code: string; name?: string }) => string;
+    };
+};
 
-            if (!isValidCode(source, LanguageType.SOURCE) || !isValidCode(target, LanguageType.TARGET))
+export const resolvers: Resolvers = {
+    Query: {
+        async translation(_, { source, target, query }) {
+            if (
+                !isValidCode(source, LanguageType.SOURCE) ||
+                !isValidCode(target, LanguageType.TARGET)
+            ) {
                 throw new UserInputError("Invalid language code");
+            }
 
             const translation = await getTranslationText(source, target, query);
-            if (!translation)
-                throw new ApolloError("An error occurred while retrieving the translation");
+            if (!translation) {
+                throw new ApolloError(
+                    "An error occurred while retrieving the translation"
+                );
+            }
 
             const info = await getTranslationInfo(source, target, query);
+
+            // Ensure all required fields are included in the return object
             return {
-                source: {
-                    lang: {
-                        code: source
-                    },
-                    text: query,
-                    detected: info?.detectedSource && {
-                        code: info.detectedSource
-                    },
-                    typo: info?.typo,
-                    pronunciation: info?.pronunciation.query,
-                    definitions: info?.definitions,
-                    examples: info?.examples,
-                    similar: info?.similar
+                detectedSource: info?.detectedSource, // Assuming TranslationInfo has this field
+                typo: info?.typo,
+                pronunciation: {
+                    query: info?.pronunciation?.query,
+                    translation: info?.pronunciation?.translation,
                 },
-                target: {
-                    lang: {
-                        code: target
-                    },
-                    text: translation,
-                    pronunciation: info?.pronunciation.translation,
-                    extraTranslations: info?.extraTranslations
+                definitions: info?.definitions || [], // Provide a fallback for missing data
+                examples: info?.examples || [],
+                similar: info?.similar || [],
+                extraTranslations: info?.extraTranslations || [], // Ensure this is included
+            };
+        },
+
+        async audio(_, { lang, query }) {
+            // If lang is 'auto', first detect the actual language
+            if (lang === "auto") {
+                const detectedInfo = await getTranslationInfo("auto", "en", query);
+                if (detectedInfo?.detectedSource) {
+                    lang = detectedInfo.detectedSource;  // Use detected language
+                } else {
+                    throw new UserInputError("Could not detect language.");
                 }
-            };
-        },
-        audio(_, args) {
-            const { lang, query } = args;
-
-            if (!isValidCode(lang))
-                throw new UserInputError("Invalid language code");
-
-            return {
-                lang: {
-                    code: lang
-                },
-                text: query
-            };
-        },
-        languages(_, args) {
-            const { type } = args;
-            const lowerType = type?.toLocaleLowerCase() as typeof LanguageType[keyof typeof LanguageType] | undefined;
-            const langEntries = Object.entries(languageList[lowerType ?? "all"]);
-            return langEntries.map(([code, name]) => ({ code, name }));
-        }
-    },
-    ...(["SourceEntry", "TargetEntry", "AudioEntry"].reduce((acc, key) => ({
-        ...acc,
-        [key]: {
-            async audio(parent) {
-                const { lang, text } = parent;
-                const parsedLang = replaceExceptedCode(LanguageType.TARGET, lang.code);
-                const audio = await getAudio(parsedLang, text);
-                if (!audio)
-                    throw new ApolloError("An error occurred while retrieving the audio");
-                return audio;
             }
-        }
-    }), {} as IResolvers)),
+        
+            if (!isValidCode(lang)) {
+                throw new UserInputError("Invalid language code");
+            }
+        
+            // Fetch audio data
+            const audio = await getAudio(lang, query);
+            if (!audio) {
+                throw new ApolloError("An error occurred while retrieving the audio");
+            }
+            return { lang: { code: lang }, text: query };
+        },
+        languages(_, { type }) {
+            const lowerType = type?.toLowerCase() as
+                | keyof typeof LanguageType
+                | undefined;
+            const langEntries = Object.entries(
+                languageList[lowerType ?? "all"]
+            );
+
+            // Explicitly cast 'name' to string
+            return langEntries.map(([code, name]) => ({
+                code,
+                name: name as string, // Cast name to string
+            }));
+        },
+    },
+
+    SourceEntry: {
+        async audio({ lang, text }) {
+            const parsedLang = replaceExceptedCode(
+                LanguageType.TARGET,
+                lang.code
+            );
+            const audio = await getAudio(parsedLang, text);
+            if (!audio) {
+                throw new ApolloError(
+                    "An error occurred while retrieving the audio"
+                );
+            }
+            return audio;
+        },
+    },
+
+    TargetEntry: {
+        async audio({ lang, text }) {
+            const parsedLang = replaceExceptedCode(
+                LanguageType.TARGET,
+                lang.code
+            );
+            const audio = await getAudio(parsedLang, text);
+            if (!audio) {
+                throw new ApolloError(
+                    "An error occurred while retrieving the audio"
+                );
+            }
+            return audio;
+        },
+    },
+
+    AudioEntry: {
+        async audio({ lang, text }) {
+            const parsedLang = replaceExceptedCode(
+                LanguageType.TARGET,
+                lang.code
+            );
+            const audio = await getAudio(parsedLang, text);
+            if (!audio) {
+                throw new ApolloError(
+                    "An error occurred while retrieving the audio"
+                );
+            }
+            return audio;
+        },
+    },
+
     Language: {
-        name(parent) {
-            const { code, name } = parent;
+        name({ code, name }) {
             return name || languageList.all[code as LangCode];
-        }
-    }
+        },
+    },
 };
 
+// Apollo Server initialization
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    introspection: true,  // Still enable introspection
+    plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
+  });
+  
 export const config = {
     api: {
-        bodyParser: false
-    }
+        bodyParser: false,
+    },
 };
 
-const apolloHandler = new ApolloServer({ typeDefs, resolvers }).createHandler({ path: "/api/graphql" });
+const apolloHandler = new ApolloServer({ typeDefs, resolvers }).createHandler({
+    path: "/api/graphql",
+});
 
-const handler: NextApiHandler = async (req, res) => {
+const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     await NextCors(req, res, {
         methods: ["GET", "POST"],
-        origin: "*"
+        origin: "*",
     });
 
-    if (req.method !== "OPTIONS")
-        return apolloHandler(req, res);
+    if (req.method !== "OPTIONS") return apolloHandler(req, res);
     res.end();
 };
 

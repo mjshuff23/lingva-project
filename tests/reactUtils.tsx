@@ -3,7 +3,6 @@ import { render, RenderOptions } from "@testing-library/react";
 import { ChakraProvider } from "@chakra-ui/react";
 import theme from "@theme";
 import { Layout } from "@components";
-import { RouterProviderMock } from "@mocks/next";
 
 // Jest JSDOM bug
 Object.defineProperty(window, 'matchMedia', {
@@ -21,13 +20,11 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 const Providers: FC<PropsWithChildren> = ({ children }) => (
-    <RouterProviderMock>
-        <ChakraProvider theme={theme}>
-            <Layout>
-                {children}
-            </Layout>
-        </ChakraProvider>
-    </RouterProviderMock>
+    <ChakraProvider theme={theme}>
+        <Layout>
+            {children}
+        </Layout>
+    </ChakraProvider>
 );
 
 const customRender = (
