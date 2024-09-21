@@ -1,6 +1,6 @@
 import { NextApiHandler } from "next";
 import NextCors from "nextjs-cors";
-import { languageList, LangCode } from "lingva-scraper";
+import { languageList, LangCode } from "lingva-scraper-update";
 
 type Data = {
     languages: {

@@ -1,4 +1,4 @@
-import { replaceExceptedCode, isValidCode, LanguageType, LangCode } from "lingva-scraper";
+import { replaceExceptedCode, isValidCode, LanguageType, LangCode } from "lingva-scraper-update";
 
 const defaultSourceLang = process.env["NEXT_PUBLIC_DEFAULT_SOURCE_LANG"];
 const defaultTargetLang = process.env["NEXT_PUBLIC_DEFAULT_TARGET_LANG"];

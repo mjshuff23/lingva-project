@@ -1,4 +1,4 @@
-import { TranslationInfo, LangCode } from "lingva-scraper";
+import { TranslationInfo, LangCode } from "lingva-scraper-update";
 
 import fullInfo from "./fullInfo.json";
 import simpleInfo from "./simpleInfo.json";

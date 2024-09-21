@@ -1,6 +1,6 @@
 import { FC, ChangeEvent } from "react";
 import { Select } from "@chakra-ui/react";
-import { LangCode } from "lingva-scraper";
+import { LangCode } from "lingva-scraper-update";
 
 type Props = {
     value: string,

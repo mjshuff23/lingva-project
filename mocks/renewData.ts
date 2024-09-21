@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { getTranslationInfo, getAudio, LangCode } from "lingva-scraper";
+import { getTranslationInfo, getAudio, LangCode } from "lingva-scraper-update";
 
 const handleError = (obj: object | null) => {
     if (!obj)
