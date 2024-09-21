@@ -9,7 +9,6 @@ type Props = {
 
 const Layout: FC<PropsWithChildren<Props>> = ({ children, ...props }) => (
   <>
-    <NoSSR>
       <Link
         href="#main"
         userSelect="none"
@@ -37,7 +36,6 @@ const Layout: FC<PropsWithChildren<Props>> = ({ children, ...props }) => (
           color={useColorModeValue("lingva.900", "lingva.100")}
         />
       </VStack>
-    </NoSSR>
   </>
 );
 

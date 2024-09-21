@@ -1,5 +1,8 @@
-import { ApolloServer, gql } from "@apollo/server";
-import { NextApiRequest, NextApiResponse, NextApiHandler } from 'next';
+import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { ApolloServerErrorCode } from "@apollo/server/errors";
+import { GraphQLError } from "graphql";
+import { NextApiRequest, NextApiResponse, NextApiHandler } from "next";
 import NextCors from "nextjs-cors";
 import {
     getTranslationInfo,
@@ -13,7 +16,33 @@ import {
     TranslationInfo,
     AudioEntry,
 } from "lingva-scraper-update";
-import { GraphQLError } from 'graphql';
+import gql from "graphql-tag";
+
+async function resolveLangCode(
+    lang: string,
+    query: string
+): Promise<LangCode | "auto"> {
+    if (lang === "auto") {
+        const detectedInfo = await getTranslationInfo("auto", "en", query);
+
+        if (detectedInfo?.detectedSource) {
+            return detectedInfo.detectedSource;
+        } else {
+            throw new GraphQLError("Could not detect language.", {
+                extensions: {
+                    code: ApolloServerErrorCode.BAD_USER_INPUT,
+                },
+            });
+        }
+    }
+    if (!isValidCode(lang)) {
+        throw new GraphQLError("Invalid language code", {
+            extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
+        });
+    }
+
+    return lang as LangCode;
+}
 
 export const typeDefs = gql`
     enum LangType {
@@ -127,64 +156,68 @@ export const resolvers: Resolvers = {
                 !isValidCode(source, LanguageType.SOURCE) ||
                 !isValidCode(target, LanguageType.TARGET)
             ) {
-                throw new UserInputError("Invalid language code");
+                throw new GraphQLError("Invalid language code", {
+                    extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
+                });
             }
 
             const translation = await getTranslationText(source, target, query);
             if (!translation) {
-                throw new ApolloError(
-                    "An error occurred while retrieving the translation"
+                throw new GraphQLError(
+                    "An error occurred while retrieving the translation",
+                    {
+                        extensions: {
+                            code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                        },
+                    }
                 );
             }
 
             const info = await getTranslationInfo(source, target, query);
 
-            // Ensure all required fields are included in the return object
             return {
-                detectedSource: info?.detectedSource, // Assuming TranslationInfo has this field
+                detectedSource: info?.detectedSource,
                 typo: info?.typo,
                 pronunciation: {
                     query: info?.pronunciation?.query,
                     translation: info?.pronunciation?.translation,
                 },
-                definitions: info?.definitions || [], // Provide a fallback for missing data
+                definitions: info?.definitions || [],
                 examples: info?.examples || [],
                 similar: info?.similar || [],
-                extraTranslations: info?.extraTranslations || [], // Ensure this is included
+                extraTranslations: info?.extraTranslations || [],
             };
         },
-
         async audio(_, { lang, query }) {
-            // If lang is 'auto', first detect the actual language
-            if (lang === "auto") {
-                const detectedInfo = await getTranslationInfo("auto", "en", query);
-                if (detectedInfo?.detectedSource) {
-                    lang = detectedInfo.detectedSource;  // Use detected language
-                } else {
-                    throw new UserInputError("Could not detect language.");
-                }
+            const resolvedLang = await resolveLangCode(lang, query);
+
+            try {
+                const audioData = await getAudio(resolvedLang, query); // query as 'text'
+
+                return {
+                    lang: { code: resolvedLang }, // Return the resolved language code
+                    text: query,
+                    audio: audioData, // Return the audio data
+                };
+            } catch (error) {
+                throw new GraphQLError(
+                    "An error occurred while retrieving the audio",
+                    {
+                        extensions: {
+                            code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                        },
+                    }
+                );
             }
-        
-            if (!isValidCode(lang)) {
-                throw new UserInputError("Invalid language code");
-            }
-        
-            // Fetch audio data
-            const audio = await getAudio(lang, query);
-            if (!audio) {
-                throw new ApolloError("An error occurred while retrieving the audio");
-            }
-            return { lang: { code: lang }, text: query };
         },
         languages(_, { type }) {
             const lowerType = type?.toLowerCase() as
-                | keyof typeof LanguageType
+                | keyof typeof languageList
                 | undefined;
             const langEntries = Object.entries(
                 languageList[lowerType ?? "all"]
             );
 
-            // Explicitly cast 'name' to string
             return langEntries.map(([code, name]) => ({
                 code,
                 name: name as string, // Cast name to string
@@ -196,12 +229,17 @@ export const resolvers: Resolvers = {
         async audio({ lang, text }) {
             const parsedLang = replaceExceptedCode(
                 LanguageType.TARGET,
-                lang.code
+                lang.code as LangCode
             );
             const audio = await getAudio(parsedLang, text);
             if (!audio) {
-                throw new ApolloError(
-                    "An error occurred while retrieving the audio"
+                throw new GraphQLError(
+                    "An error occurred while retrieving the audio",
+                    {
+                        extensions: {
+                            code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                        },
+                    }
                 );
             }
             return audio;
@@ -212,12 +250,17 @@ export const resolvers: Resolvers = {
         async audio({ lang, text }) {
             const parsedLang = replaceExceptedCode(
                 LanguageType.TARGET,
-                lang.code
+                lang.code as LangCode
             );
             const audio = await getAudio(parsedLang, text);
             if (!audio) {
-                throw new ApolloError(
-                    "An error occurred while retrieving the audio"
+                throw new GraphQLError(
+                    "An error occurred while retrieving the audio",
+                    {
+                        extensions: {
+                            code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                        },
+                    }
                 );
             }
             return audio;
@@ -228,12 +271,17 @@ export const resolvers: Resolvers = {
         async audio({ lang, text }) {
             const parsedLang = replaceExceptedCode(
                 LanguageType.TARGET,
-                lang.code
+                lang.code as LangCode
             );
             const audio = await getAudio(parsedLang, text);
             if (!audio) {
-                throw new ApolloError(
-                    "An error occurred while retrieving the audio"
+                throw new GraphQLError(
+                    "An error occurred while retrieving the audio",
+                    {
+                        extensions: {
+                            code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
+                        },
+                    }
                 );
             }
             return audio;
@@ -247,32 +295,53 @@ export const resolvers: Resolvers = {
     },
 };
 
-// Apollo Server initialization
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    introspection: true,  // Still enable introspection
-    plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
-  });
-  
+    introspection: true, // Allow introspection in development
+    plugins: [ApolloServerPluginLandingPageLocalDefault()],
+});
+
 export const config = {
     api: {
         bodyParser: false,
     },
 };
 
-const apolloHandler = new ApolloServer({ typeDefs, resolvers }).createHandler({
-    path: "/api/graphql",
-});
+// Custom Next.js handler
+const handler: NextApiHandler = async (
+    req: NextApiRequest,
+    res: NextApiResponse
+) => {
+    // Start Apollo server if it hasn’t started yet
+    await server.start();
 
-const handler: NextApiHandler = async (req: NextApiRequest, res: NextApiResponse) => {
+    // Use Next.js CORS middleware
     await NextCors(req, res, {
         methods: ["GET", "POST"],
         origin: "*",
     });
 
-    if (req.method !== "OPTIONS") return apolloHandler(req, res);
-    res.end();
+    // Convert the request to an Apollo HTTP request
+    if (req.method === "POST" || req.method === "GET") {
+        // Pass the request to Apollo server for handling
+        await server
+            .executeOperation({
+                query: req.body.query, // GraphQL query
+                variables: req.body.variables, // GraphQL variables if any
+            })
+            .then((response) => {
+                res.status(200).json(response);
+            })
+            .catch((error) => {
+                res.status(500).json({
+                    error: "Internal server error" + error,
+                });
+            });
+    } else {
+        res.setHeader("Allow", ["GET", "POST"]);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
+    }
 };
 
 export default handler;
