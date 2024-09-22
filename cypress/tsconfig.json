@@ -4,10 +4,21 @@
     "isolatedModules": false,
     "types": [
       "cypress",
-      "@testing-library/cypress"
+      "@testing-library/cypress",
     ]
   },
-  "include": [
-    "."
+"include": [
+  "support/**/*.ts",
+  "e2e/**/*.ts",
+  "**/*.ts",
+  "**/*.tsx",
+  "cypress",
+  "cypress/**/*.ts",
+  "cypress/**/*.tsx",
+  "cypress/**/*.js"
+],
+  "exclude": [
+    "../node_modules",
+    "../dist"
   ]
 }

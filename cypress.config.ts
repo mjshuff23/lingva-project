@@ -1,13 +1,12 @@
-import { defineConfig } from 'cypress';
+import { defineConfig } from "cypress";
 
 export default defineConfig({
     defaultCommandTimeout: 10000,
     waitForAnimations: true,
     retries: 4,
-    projectId: 'qgjdyd',
+    projectId: "qgjdyd",
     e2e: {
-        setupNodeEvents(_on, _config) {},
-        baseUrl: 'http://localhost:3000',
-        specPattern: 'cypress/e2e/**/*.{js,jsx,ts,tsx}'
-    }
+        baseUrl: "http://localhost:3000",
+        specPattern: "cypress/e2e/**/*.{js,jsx,ts,tsx}",
+    },
 });

@@ -1,0 +1,1 @@
+export const encodeUrlQuery = (query: string): string => encodeURIComponent(query);

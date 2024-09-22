@@ -12,7 +12,6 @@
       "./tests" // Added this to include our custom type definitions
     ],
     "types": [
-      "cypress",
       "@testing-library/cypress",
       "node",
       "jest",

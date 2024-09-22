@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  frontend:
+    volumes:
+      - ./public:/app/public:rw
+      - ./pages:/app/pages:rw
+      - ./components:/app/components:rw
+      - ./hooks:/app/hooks:rw
+      - ./utils:/app/utils:rw
+      - ./cypress:/app/cypress:rw
+      - ./tests:/app/tests:rw
+      - ./node_modules:/app/node_modules:rw
+      - .next:/app/.next:rw
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SITE_DOMAIN=localhost
+      - NEXT_PUBLIC_FORCE_DEFAULT_THEME=light
+      - NEXT_PUBLIC_DEFAULT_SOURCE_LANG=en
+      - NEXT_PUBLIC_DEFAULT_TARGET_LANG=es
+    command: npm run dev

@@ -1,33 +1,41 @@
-# https://nextjs.org/docs/deployment#docker-image
-
-FROM node:lts-alpine AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-COPY package.json package-lock.json ./  
-RUN npm install
-
-FROM node:lts-alpine AS builder
-RUN apk add --no-cache curl
-WORKDIR /app
-
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-COPY --chown=nextjs:nodejs . .
-COPY --from=deps /app/node_modules ./node_modules
-RUN chown nextjs:nodejs .
-
-USER nextjs
-
-EXPOSE 3000
-
-ENV NODE_ENV production
-
-ENV NEXT_TELEMETRY_DISABLED 1
-
-HEALTHCHECK --interval=1m --timeout=3s CMD curl -f http://localhost:3000/ || exit 1
-
-CMD NEXT_PUBLIC_SITE_DOMAIN=$site_domain \
-    NEXT_PUBLIC_FORCE_DEFAULT_THEME=$force_default_theme \
-    NEXT_PUBLIC_DEFAULT_SOURCE_LANG=$default_source_lang \
-    NEXT_PUBLIC_DEFAULT_TARGET_LANG=$default_target_lang \
-    npm run build && npm start   # Replace yarn commands with npm
+# --- Base Image for Dev and Prod ---
+    FROM node:lts-alpine AS base
+    WORKDIR /app
+    RUN apk add --no-cache libc6-compat curl
+    
+    # --- Install dependencies (including dev dependencies for build) ---
+    FROM base AS deps
+    COPY package.json package-lock.json ./
+    RUN npm install
+    
+    # --- Development environment ---
+    FROM base AS dev
+    WORKDIR /app
+    COPY --from=deps /app/node_modules ./node_modules
+    COPY . .
+    RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+    RUN chown nextjs:nodejs . && chown -R nextjs:nodejs /app
+    USER nextjs
+    EXPOSE 3000
+    CMD ["npm", "run", "dev"]
+    
+    # --- Build app for Production ---
+    FROM base AS builder
+    WORKDIR /app
+    COPY --from=deps /app/node_modules ./node_modules
+    COPY . .
+    RUN npm run build
+    
+    # --- Production environment ---
+    FROM base AS prod
+    WORKDIR /app
+    ENV NODE_ENV=production
+    ENV NEXT_TELEMETRY_DISABLED=1
+    COPY --from=builder /app/.next ./.next
+    COPY --from=builder /app/node_modules ./node_modules
+    COPY --from=builder /app/package.json ./package.json
+    COPY --from=builder /app/public ./public
+    USER nextjs
+    EXPOSE 3000
+    HEALTHCHECK --interval=1m --timeout=3s CMD curl -f http://localhost:3000/ || exit 1
+    CMD ["npm", "start"]

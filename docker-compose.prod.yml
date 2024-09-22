@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  frontend:
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SITE_DOMAIN=prod_site.com
+      - NEXT_PUBLIC_FORCE_DEFAULT_THEME=light
+      - NEXT_PUBLIC_DEFAULT_SOURCE_LANG=en
+      - NEXT_PUBLIC_DEFAULT_TARGET_LANG=es
+    command: npm run start
