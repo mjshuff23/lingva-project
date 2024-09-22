@@ -1,5 +1,5 @@
-import { render, screen, waitFor, act } from "./reactUtils";
 import '@testing-library/jest-dom';
+import { render, screen, waitFor, act } from "./reactUtils";
 import userEvent from "@testing-library/user-event";
 import { localStorageSetMock } from "~mocks/localStorage";
 import { routerMock } from "~mocks/next";

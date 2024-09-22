@@ -1,6 +1,6 @@
+import '@testing-library/jest-dom';
 import { render, screen } from "./reactUtils";
 import CustomError from "~components/CustomError";
-import '@testing-library/jest-dom';
 
 const code = Math.random() * 199 + 400;
 const text = "Testing fake error";
