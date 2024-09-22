@@ -1,7 +1,6 @@
 import { FC, PropsWithChildren } from "react";
 import { Flex, VStack, Link, useColorModeValue } from "@chakra-ui/react";
-import { Header, Footer } from ".";
-import NoSSR from './NoSSR';
+import { Header, Footer, NoSSR } from ".";
 
 type Props = {
   [key: string]: any;
@@ -23,19 +22,18 @@ const Layout: FC<PropsWithChildren<Props>> = ({ children, ...props }) => (
       </Link>
 
       <VStack minH="100%" spacing={7}>
-        {/* Ensure consistent rendering for both server and client */}
-        <Header bgColor={useColorModeValue("lingva.100", "lingva.900")} />
+  <NoSSR>
+    <Header bgColor={useColorModeValue("lingva.100", "lingva.900")} />
+  </NoSSR>
 
-        {/* Change main layout to ensure it doesn't introduce mismatches */}
-        <Flex as="main" id="main" flexGrow={1} w="full" {...props}>
-          {children}
-        </Flex>
-
-        <Footer
-          bgColor={useColorModeValue("lingva.100", "lingva.900")}
-          color={useColorModeValue("lingva.900", "lingva.100")}
-        />
-      </VStack>
+  <Flex as="main" id="main" flexGrow={1} w="full" {...props}>
+    {children}
+  </Flex>
+    <Footer
+      bgColor={useColorModeValue("lingva.100", "lingva.900")}
+      color={useColorModeValue("lingva.900", "lingva.100")}
+    />
+</VStack>
   </>
 );
 

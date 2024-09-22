@@ -1,7 +1,7 @@
 import { FC } from "react";
 import Head from "next/head";
 import NextLink from "next/link";
-import { Flex, HStack, IconButton, Link, useColorModeValue } from "@chakra-ui/react";
+import { Flex, HStack, IconButton, Link as ChakraLink, useColorModeValue } from "@chakra-ui/react";
 import { FaGithub } from "react-icons/fa";
 import Image from "next/image";
 import { ColorModeToggler } from ".";
@@ -27,21 +27,21 @@ const Header: FC<Props> = (props) => (
             {...props}
         >
             <NextLink href="/" passHref={true}>
-                <Link display="flex">
+                <ChakraLink as="span" display="flex">
                     <Image
                         src={useColorModeValue("/banner_light.svg", "/banner_dark.svg")}
                         alt="Logo"
                         width={110}
                         height={64}
                     />
-                </Link>
+                </ChakraLink>
             </NextLink>
             <HStack spacing={3}>
                 <ColorModeToggler
                     variant={useColorModeValue("outline", "solid")}
                 />
                 <IconButton
-                    as={Link}
+                    as={ChakraLink}
                     href="https://github.com/thedaviddelta/lingva-translate"
                     isExternal={true}
                     aria-label="GitHub"

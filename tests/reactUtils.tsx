@@ -2,7 +2,7 @@ import { FC, ReactElement, PropsWithChildren } from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import { ChakraProvider } from "@chakra-ui/react";
 import theme from "@theme";
-import { Layout } from "@components";
+import { Layout } from "~components";
 
 // Jest JSDOM bug
 Object.defineProperty(window, 'matchMedia', {

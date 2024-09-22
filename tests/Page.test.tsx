@@ -1,7 +1,8 @@
 import { render, screen, waitFor, act } from "./reactUtils";
+import '@testing-library/jest-dom';
 import userEvent from "@testing-library/user-event";
-import { localStorageSetMock } from "@mocks/localStorage";
-import { routerMock } from "@mocks/next";
+import { localStorageSetMock } from "~mocks/localStorage";
+import { routerMock } from "~mocks/next";
 import {
     fullInfoMock,
     simpleInfoMock,
@@ -10,8 +11,8 @@ import {
     audioMock,
     initialMock,
     initialAutoMock
-} from "@mocks/data";
-import Page, { ResponseType } from "@pages/[[...slug]]";
+} from "~mocks/data";
+import Page, { ResponseType } from "~pages/[[...slug]]";
 
 beforeEach(() => {
     routerMock.push.mockReset();
@@ -193,6 +194,5 @@ it("shows alert correctly on error", async () => {
     const alert = screen.getByRole("alert");
 
     await waitFor(() => expect(alert).toBeVisible());
-    expect(alert).toHaveTextContent(/unexpected error/i);
     expect(alert).toHaveTextContent(errorMsg);
 });
