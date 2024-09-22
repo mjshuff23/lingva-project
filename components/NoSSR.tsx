@@ -1,5 +1,5 @@
-const NoSSR = ({ children }: { children: React.ReactNode }) => (
-  <>{typeof window === "undefined" ? null : children}</>
-);
+import dynamic from "next/dynamic";
+
+const NoSSR = dynamic(() => Promise.resolve(({ children }: { children: React.ReactNode }) => <>{children}</>), { ssr: false });
 
 export default NoSSR;

@@ -17,13 +17,13 @@ import { HStack, IconButton, Stack, VStack } from "@chakra-ui/react";
 import { FaExchangeAlt } from "react-icons/fa";
 import { HiTranslate } from "react-icons/hi";
 import { useHotkeys } from "react-hotkeys-hook";
-import { CustomHead, LangSelect, TranslationArea } from "@components";
-import { useToastOnLoad } from "@hooks";
-import { extractSlug } from "@utils/slug";
-import langReducer, { Actions, initialState, State } from "@utils/reducer";
-import { localGetItem, localSetItem } from "@utils/storage";
+import { CustomHead, LangSelect, TranslationArea } from "~components";
+import { useToastOnLoad } from "~hooks";
+import { extractSlug } from "~utils/slug";
+import langReducer, { Actions, initialState, State } from "~utils/reducer";
+import { localGetItem, localSetItem } from "~utils/storage";
 
-const AutoTranslateButton = dynamic(() => import("@components/AutoTranslateButton"), { ssr: false });
+const AutoTranslateButton = dynamic(() => import("~components/AutoTranslateButton"), { ssr: false });
 
 export enum ResponseType {
     SUCCESS,
@@ -188,6 +188,11 @@ const Page: NextPage<Props> = (props) => {
             <CustomHead home={props.type === ResponseType.HOME} />
 
             <VStack px={[8, null, 24, 40]} w="full">
+            {props.type === ResponseType.ERROR && (
+                <div role="alert">
+                    {props.errorMsg || 'Random error'}
+                </div>
+            )}
                 <HStack px={[1, null, 3, 4]} w="full">
                     <LangSelect
                         id="source"

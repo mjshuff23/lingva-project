@@ -9,6 +9,7 @@
     ]
   },
   "include": [
-    "."
+    ".",
+    "jest-dom.d.ts"
   ]
 }

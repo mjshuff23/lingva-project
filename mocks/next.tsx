@@ -6,7 +6,7 @@ jest.mock("next/router", () => ({
 }));
 
 // Provide the mock router values
-(useRouter as jest.Mock).mockReturnValue({
+const routerMock = {
   basePath: "",
   pathname: "/",
   route: "/",
@@ -27,4 +27,8 @@ jest.mock("next/router", () => ({
   isLocaleDomain: false,
   isReady: true,
   isPreview: false,
-});
+};
+
+(useRouter as jest.Mock).mockReturnValue(routerMock);
+
+export { routerMock };

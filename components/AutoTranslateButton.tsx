@@ -1,7 +1,7 @@
 import { useState, useEffect, FC } from "react";
 import { IconButton } from "@chakra-ui/react";
 import { FaBolt } from "react-icons/fa";
-import { localGetItem, localSetItem } from "@utils/storage";
+import { localGetItem, localSetItem } from "~utils/storage";
 
 type Props = {
     onAuto: () => void,

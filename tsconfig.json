@@ -8,11 +8,15 @@
     ],
     "typeRoots": [
       "./node_modules/@types",
-      "./hooks"
+      "./hooks",
+      "./tests" // Added this to include our custom type definitions
     ],
     "types": [
       "cypress",
-      "@testing-library/cypress"
+      "@testing-library/cypress",
+      "node",
+      "jest",
+      "@testing-library/jest-dom"
     ],
     "allowJs": false,
     "skipLibCheck": true,
@@ -25,8 +29,8 @@
     "forceConsistentCasingInFileNames": true,
     "strictBindCallApply": true,
     "declaration": true,
-    "outDir": "./dist", // This ensures compiled files and declarations go to the dist folder
-    "rootDir": ".", // Treat the project root as the base
+    "outDir": "./dist",
+    "rootDir": ".",
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -36,7 +40,10 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@*": ["*"]
+      "~*": [
+        "*"
+      ],
+      "@theme": ["theme"],
     },
     "noEmit": false
   },
@@ -47,11 +54,12 @@
     "utils/*",
     "**/*.ts",
     "**/*.tsx",
-    "cypress/support/**/*.ts" // Ensure Cypress support files are included
+    "tests/**/*",
+    "cypress/support/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.config.js"
+    "cypress"
   ]
 }
