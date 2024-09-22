@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "debug": "NODE_OPTIONS='--inspect' next dev",
+    "setup": "bash scripts/setup.sh",
     "test-build": "next build",
     "build": "tsc --project tsconfig.json && next build",
     "start": "next start --port ${PORT-3000}",
@@ -12,7 +13,13 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "renew-mock-data": "ts-node --skip-project mocks/renewData.ts",
-    "test:clear-cache": "jest --clearCache"
+    "test:clear-cache": "jest --clearCache",
+    "docker:build:dev": "docker build -t lingva-translate-dev . --target dev",
+    "docker:run:dev": "docker run -p 3000:3000 -v $(pwd):/app lingva-translate-dev",
+    "docker-dev": "npm run docker:build:dev && npm run docker:run:dev",
+    "docker:build:prod": "docker build -t lingva-translate-prod . --target prod",
+    "docker:run:prod": "docker run -p 3000:3000 lingva-translate-prod",
+    "docker-prod": "npm run docker:build:prod && npm run docker:run:prod"
   },
   "dependencies": {
     "@apollo/server": "^4.11.0",

@@ -50,86 +50,86 @@ it("switches page on inputs change & goes back correctly", () => {
     cy.go("back").checkIfEmpty();
 });
 
-// it("switches first loaded page and back and forth on language change", () => {
-//     const query = "Texto aleatorio";
-//     cy.visit(`/auto/en/${query}`);
+it("switches first loaded page and back and forth on language change", () => {
+    const query = "Texto aleatorio";
+    cy.visit(`/auto/en/${query}`);
 
-//     cy.findByRole("button", { name: /switch auto/i }).click();
+    cy.findByRole("button", { name: /switch auto/i }).click();
 
-//     cy.findByRole("textbox", { name: /translation query/i })
-//         .as("query")
-//         .should("have.value", query);
+    cy.findByRole("textbox", { name: /translation query/i })
+        .as("query")
+        .should("have.value", query);
 
-//     cy.changeLanguage({
-//         role: "combobox",
-//         name: /source language/i,
-//         value: "eo",
-//     });
-//     cy.url().should("include", `/eo/en/${encodeURIComponent(query)}`);
+    cy.changeLanguage({
+        role: "combobox",
+        name: /source language/i,
+        value: "eo",
+    });
+    cy.url().should("include", `/eo/en/${encodeURIComponent(query)}`);
 
-//     cy.findByRole("combobox", { name: /source language/i })
-//         .as("source")
-//         .select("auto");
-//     cy.url().should("include", `/auto/en/${encodeURIComponent(query)}`);
+    cy.findByRole("combobox", { name: /source language/i })
+        .as("source")
+        .select("auto");
+    cy.url().should("include", `/auto/en/${encodeURIComponent(query)}`);
 
-//     cy.findByRole("link", { name: /logo/i }).click();
-//     cy.url().should("not.include", "/auto/en");
-//     cy.checkIfEmpty();
-// });
+    cy.findByRole("link", { name: /logo/i }).click();
+    cy.url().should("not.include", "/auto/en");
+    cy.checkIfEmpty();
+});
 
-// it("language switching button is disabled on 'auto', but enables when other", () => {
-//     cy.findByRole("button", { name: /switch auto/i }).click();
+it("language switching button is disabled on 'auto', but enables when other", () => {
+    cy.findByRole("button", { name: /switch auto/i }).click();
 
-//     cy.findByRole("button", { name: /switch languages/i })
-//         .as("btnSwitch")
-//         .should("be.disabled");
+    cy.findByRole("button", { name: /switch languages/i })
+        .as("btnSwitch")
+        .should("be.disabled");
 
-//     cy.changeLanguage({
-//         role: "combobox",
-//         name: /source language/i,
-//         value: "eo",
-//     });
+    cy.changeLanguage({
+        role: "combobox",
+        name: /source language/i,
+        value: "eo",
+    });
 
-//     cy.get("@btnSwitch").should("be.enabled").click();
-//     cy.checkTranslationValues({
-//         sourceValue: "en",
-//         targetValue: "eo",
-//         queryValue: "",
-//         translationValue: "",
-//         url: "/en/eo",
-//     });
+    cy.get("@btnSwitch").should("be.enabled").click();
+    cy.checkTranslationValues({
+        sourceValue: "en",
+        targetValue: "eo",
+        queryValue: "",
+        translationValue: "",
+        url: "/en/eo",
+    });
 
-//     cy.get("body").type("{ctrl}{shift}s");
-//     cy.checkTranslationValues({
-//         sourceValue: "eo",
-//         targetValue: "en",
-//         queryValue: "",
-//         translationValue: "",
-//         url: "/eo/en",
-//     });
+    cy.get("body").type("{ctrl}{shift}s");
+    cy.checkTranslationValues({
+        sourceValue: "eo",
+        targetValue: "en",
+        queryValue: "",
+        translationValue: "",
+        url: "/eo/en",
+    });
 
-//     cy.get("body").type("{ctrl}{shift}f");
-//     cy.checkTranslationValues({
-//         sourceValue: "en",
-//         targetValue: "eo",
-//         queryValue: "",
-//         translationValue: "",
-//         url: "/en/eo",
-//     });
-// });
+    cy.get("body").type("{ctrl}{shift}f");
+    cy.checkTranslationValues({
+        sourceValue: "en",
+        targetValue: "eo",
+        queryValue: "",
+        translationValue: "",
+        url: "/en/eo",
+    });
+});
 
-// it("loads & plays audio correctly", () => {
-//     const query =
-//         "No hi havia a València dos amants com nosaltres,\ncar d'amants com nosaltres en són parits ben pocs.";
-//     cy.visit(`/ca/en/${encodeURIComponent(query)}`);
+it("loads & plays audio correctly", () => {
+    const query =
+        "No hi havia a València dos amants com nosaltres,\ncar d'amants com nosaltres en són parits ben pocs.";
+    cy.visit(`/ca/en/${encodeURIComponent(query)}`);
 
-//     const playLabel = "Play audio";
-//     const stopLabel = "Stop audio";
+    const playLabel = "Play audio";
+    const stopLabel = "Stop audio";
 
-//     cy.playAudio(playLabel, stopLabel);
-//     cy.stopAudio(stopLabel, playLabel);
-//     cy.playAudio(playLabel, stopLabel);
-// });
+    cy.playAudio(playLabel, stopLabel);
+    cy.stopAudio(stopLabel, playLabel);
+    cy.playAudio(playLabel, stopLabel);
+});
 
 // it("skips to main & toggles color mode", () => {
 //     cy.findByRole("link", { name: /skip to content/i }).click({ force: true });

@@ -197,7 +197,7 @@ const Page: NextPage<Props> = (props) => {
                     <LangSelect
                         id="source"
                         aria-label="Source language"
-                        value={source}
+                        value="{source}"
                         detectedSource={detectedSource}
                         onChange={e => setLanguage(LanguageType.SOURCE, e.target.value)}
                         langs={languageList.source}
@@ -277,72 +277,103 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 });
 
 export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
-    if (!params?.slug || !Array.isArray(params.slug))
+    try {
+        console.log("getStaticProps called with params:", params);
+
+        // Check if slug is valid and array
+        if (!params?.slug || !Array.isArray(params.slug)) {
+            return {
+                props: {
+                    type: ResponseType.HOME,
+                },
+            };
+        }
+
+        const { source, target, query } = extractSlug(params.slug);
+
+        console.log("Extracted slug values:", { source, target, query });
+
+        if (!query) {
+            return {
+                notFound: true,
+            };
+        }
+
+        if (!source || !target) {
+            return {
+                redirect: {
+                    destination: `/${source ?? "auto"}/${target ?? "en"}/${query}`,
+                    permanent: true,
+                },
+            };
+        }
+
+        if (!isValidCode(source, LanguageType.SOURCE) || !isValidCode(target, LanguageType.TARGET)) {
+            console.log("Invalid language codes:", { source, target });
+            return {
+                notFound: true,
+            };
+        }
+
+        const initial = { source, target, query };
+
+        // Fetch translation text
+        const translation = await getTranslationText(source, target, query);
+
+        if (!translation) {
+            console.error("Error retrieving translation:", { source, target, query });
+            return {
+                props: {
+                    type: ResponseType.ERROR,
+                    errorMsg: "An error occurred while retrieving the translation",
+                    initial, // Pass initial even when there's an error
+                },
+                revalidate: 1,
+            };
+        }
+
+        const info = await getTranslationInfo(source, target, query);
+
+        const audioSource = source === "auto" && info?.detectedSource ? info.detectedSource : source;
+        const parsedAudioSource = replaceExceptedCode(LanguageType.TARGET, audioSource);
+
+        const [audioQuery, audioTranslation] = await Promise.all([
+            getAudio(parsedAudioSource, query),
+            getAudio(target, translation),
+        ]);
+
+        const audio = {
+            query: audioQuery,
+            translation: audioTranslation,
+        };
+        console.log("Successfully fetched translation and audio:");
+
         return {
             props: {
-                type: ResponseType.HOME
-            }
+                type: ResponseType.SUCCESS,
+                translation,
+                info,
+                audio,
+                initial,
+            },
+            revalidate: 2 * 30 * 24 * 60 * 60, // 2 months
         };
-
-    const { source, target, query } = extractSlug(params.slug);
-
-    if (!query)
-        return {
-            notFound: true
-        };
-
-    if (!source || !target)
-        return {
-            redirect: {
-                destination: `/${source ?? "auto"}/${target ?? "en"}/${query}`,
-                permanent: true
-            }
-        };
-
-    if (!isValidCode(source, LanguageType.SOURCE) || !isValidCode(target, LanguageType.TARGET))
-        return {
-            notFound: true
-        };
-
-    const initial = { source, target, query };
-
-    const translation = await getTranslationText(source, target, query);
-
-    if (!translation)
+    } catch (error) {
+        console.error("An unexpected error occurred in getStaticProps:", error);
+        const slugQuery = Array.isArray(params?.slug) ? params.slug.join(" ") : params?.slug ?? "";
         return {
             props: {
                 type: ResponseType.ERROR,
-                errorMsg: "An error occurred while retrieving the translation",
-                initial
+                errorMsg: "An unexpected error occurred while retrieving the translation.",
+                initial: {
+                    source: "auto",
+                    target: "en",
+                    query: slugQuery,
+                }, // Make sure initial is provided when returning an error
             },
-            revalidate: 1
+            revalidate: 1,
         };
-
-    const info = await getTranslationInfo(source, target, query);
-
-    const audioSource = source === "auto" && info?.detectedSource
-        ? info.detectedSource
-        : source;
-    const parsedAudioSource = replaceExceptedCode(LanguageType.TARGET, audioSource);
-
-    const [audioQuery, audioTranslation] = await Promise.all([
-        getAudio(parsedAudioSource, query),
-        getAudio(target, translation)
-    ]);
-
-    const audio = {
-        query: audioQuery,
-        translation: audioTranslation
-    };
-
-    return {
-        props: {
-            type: ResponseType.SUCCESS,
-            translation,
-            info,
-            audio,
-            initial
-        },
-        revalidate: 2 * 30 * 24 * 60 * 60 // 2 months
-    };
+    }
 };
+
+
