@@ -278,8 +278,6 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 
 export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
     try {
-        console.log("getStaticProps called with params:", params);
-
         // Check if slug is valid and array
         if (!params?.slug || !Array.isArray(params.slug)) {
             return {
@@ -290,8 +288,6 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
         }
 
         const { source, target, query } = extractSlug(params.slug);
-
-        console.log("Extracted slug values:", { source, target, query });
 
         if (!query) {
             return {
@@ -346,7 +342,7 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
             query: audioQuery,
             translation: audioTranslation,
         };
-        console.log("Successfully fetched translation and audio:");
+        console.log("Successfully fetched translation and audio");
 
         return {
             props: {

@@ -10,30 +10,49 @@ import {
     TextareaProps,
     useBreakpointValue,
     useColorModeValue,
-    useClipboard
+    useClipboard,
 } from "@chakra-ui/react";
 import { FaCopy, FaCheck, FaPlay, FaStop } from "react-icons/fa";
-import { useAudioFromBuffer } from "~hooks";
+import { useAudioFromBuffer } from "~hooks"; // Your custom hook
 
-type Props =  {
-    value: string,
-    onChange?: TextareaProps["onChange"],
-    onSubmit?: () => void,
-    readOnly?: true,
-    audio?: number[],
-    canCopy?: boolean,
-    isLoading?: boolean,
-    [key: string]: any
+type Props = {
+    value: string;
+    onChange?: TextareaProps["onChange"];
+    onSubmit?: () => void;
+    readOnly?: true;
+    audio?: number[];
+    canCopy?: boolean;
+    isLoading?: boolean;
+    [key: string]: any;
 };
 
-const TranslationArea: FC<Props> = ({ value, onChange, onSubmit, readOnly, audio, canCopy, isLoading, pronunciation, ...props }) => {
+const TranslationArea: FC<Props> = ({
+    value,
+    onChange,
+    onSubmit,
+    readOnly,
+    audio,
+    canCopy,
+    isLoading,
+    pronunciation,
+    ...props
+}) => {
     const { hasCopied, onCopy } = useClipboard(value);
-    const { audioExists, isAudioPlaying, onAudioClick } = useAudioFromBuffer(audio);
+    const { audioExists, isAudioPlaying, onAudioClick, error } =
+        useAudioFromBuffer(audio);
+
     const spinnerProps = {
         size: useBreakpointValue(["lg", null, "xl"]) ?? "lg",
         color: useColorModeValue("lingva.500", "lingva.200"),
-        emptyColor: useColorModeValue("gray.300", "gray.600")
+        emptyColor: useColorModeValue("gray.300", "gray.600"),
     };
+
+    // Determine the correct label for the play/stop button based on error or playing state
+    const playButtonLabel = error
+        ? error
+        : isAudioPlaying
+        ? "Stop audio"
+        : "Play audio";
 
     return (
         <VStack
@@ -50,7 +69,7 @@ const TranslationArea: FC<Props> = ({ value, onChange, onSubmit, readOnly, audio
                 borderColor: useColorModeValue("lingva.800", "lingva.400"),
             }}
             _readOnly={{
-                userSelect: "auto"
+                userSelect: "auto",
             }}
         >
             <Textarea
@@ -61,13 +80,23 @@ const TranslationArea: FC<Props> = ({ value, onChange, onSubmit, readOnly, audio
                 resize="none"
                 size="lg"
                 variant="ghost"
-                boxShadow={`inset 0 0 1px ${useColorModeValue("hsl(146 100% 17% / 25%)", "hsl(142 40% 82% / 25%)")}`}
+                boxShadow={`inset 0 0 1px ${useColorModeValue(
+                    "hsl(146 100% 17% / 25%)",
+                    "hsl(142 40% 82% / 25%)"
+                )}`}
                 data-gramm_editor={false}
-                onKeyPress={e => (e.ctrlKey || e.metaKey) && e.key === "Enter" && onSubmit?.()}
+                onKeyDown={(e) =>
+                    (e.ctrlKey || e.metaKey) &&
+                    e.key === "Enter" &&
+                    onSubmit?.()
+                } // Updated from onKeyPress to onKeyDown
                 flex={1}
                 bgColor="transparent"
                 _focus={{
-                    bgColor: useColorModeValue("hsl(0deg 0% 0% / 2.5%)", "hsl(0deg 0% 100% / 2.5%)")
+                    bgColor: useColorModeValue(
+                        "hsl(0deg 0% 0% / 2.5%)",
+                        "hsl(0deg 0% 100% / 2.5%)"
+                    ),
                 }}
                 {...props}
             />
@@ -78,15 +107,30 @@ const TranslationArea: FC<Props> = ({ value, onChange, onSubmit, readOnly, audio
                 left={0}
                 right={0}
             >
-                <HStack justify="space-between" px={5} h={useBreakpointValue([12, null, 14]) ?? 12} w="0px" flex={1}>
+                <HStack
+                    justify="space-between"
+                    px={5}
+                    h={useBreakpointValue([12, null, 14]) ?? 12}
+                    w="0px"
+                    flex={1}
+                >
                     <Tooltip label={pronunciation}>
-                        <Text opacity={0.75} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+                        <Text
+                            opacity={0.75}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                        >
                             {pronunciation}
                         </Text>
                     </Tooltip>
                     <HStack pointerEvents="auto">
                         {canCopy && (
-                            <Tooltip label={hasCopied ? "Copied!" : "Copy to clipboard"}>
+                            <Tooltip
+                                label={
+                                    hasCopied ? "Copied!" : "Copy to clipboard"
+                                }
+                            >
                                 <IconButton
                                     aria-label="Copy to clipboard"
                                     icon={hasCopied ? <FaCheck /> : <FaCopy />}
@@ -97,27 +141,33 @@ const TranslationArea: FC<Props> = ({ value, onChange, onSubmit, readOnly, audio
                                 />
                             </Tooltip>
                         )}
-                        <Tooltip label={isAudioPlaying ? "Stop audio" : "Play audio"}>
-                            <IconButton
-                                aria-label={isAudioPlaying ? "Stop audio" : "Play audio"}
-                                icon={isAudioPlaying ? <FaStop /> : <FaPlay />}
-                                onClick={onAudioClick}
-                                colorScheme="lingva"
-                                variant="ghost"
-                                disabled={!audioExists}
-                            />
-                        </Tooltip>
+                        {audioExists && (
+                            <Tooltip label={playButtonLabel}>
+                                <IconButton
+                                    aria-label={playButtonLabel}
+                                    icon={
+                                        isAudioPlaying ? <FaStop /> : <FaPlay />
+                                    }
+                                    onClick={onAudioClick}
+                                    colorScheme="lingva"
+                                    variant="ghost"
+                                    disabled={!!error} // Disable if an error occurred
+                                />
+                            </Tooltip>
+                        )}
                     </HStack>
                 </HStack>
             </HStack>
-            {isLoading && <Spinner
-                position="absolute"
-                inset={0}
-                m="auto !important"
-                thickness="3px"
-                label="Loading translation"
-                {...spinnerProps}
-            />}
+            {isLoading && (
+                <Spinner
+                    position="absolute"
+                    inset={0}
+                    m="auto !important"
+                    thickness="3px"
+                    label="Loading translation"
+                    {...spinnerProps}
+                />
+            )}
         </VStack>
     );
 };
