@@ -48,6 +48,7 @@
     "noEmit": false
   },
   "include": [
+    "jest.setup.ts",
     "next-env.d.ts",
     "components/*",
     "hooks/*",
